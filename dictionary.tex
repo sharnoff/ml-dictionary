@@ -283,7 +283,7 @@ The derivative of tanh is:
 
 \subsection{Logistic / Sigmiod}
 \[ a_i = \frac{1}{1 + e^{-P_i}} = 0.5 + 0.5 \text{ tanh}(0.5 P_i) \]
-% spacing
+%
 The logistic function is similar to tanh in the shape of its curve, but
 its range is only between 0 and 1 and it takes longer to approach its
 limits. (It is actually a scaled version of tanh) It also has a particular
@@ -327,7 +327,7 @@ the name `Logistic Function' to describe the smooth curve, but switch to
 
 \subsection{Softsign}
 \[ a_i = \frac{P_i}{|P_i| + 1} \]
-% spacing
+%
 Softsign appears similar in shape to Tanh or Logistic (once scaled). At
 the origin, its slope is equal to Tanh (which is steeper than Logistic),
 but it levels off very quickly and takes much longer to approach 1 than
@@ -337,7 +337,7 @@ Its derivative is:
 
 \subsection{Softmax}
 \[ a_i = \sigma(P)_i = \frac{e^{P_i}}{{\sum}_k e^{P_k}} \]
-% spacing
+%
 While softmax does use all of the values in the layer to calculate
 individual values, it is still considered an activation function. Softmax
 `squishes' all of the values of a layer to 1. Softmax is often (and only)
@@ -362,21 +362,21 @@ Some definitions:\\
 \subsection{L1 (Lasso)}
 \[ E_\text{L1} = C(\theta) +
 \underbrace{\lambda{\sum}_i |\theta_i|}_\text{L1} \]
-%spacing
+%
 L1 Regularization is an extra pentalty added onto each weight, where
-$\lambda > 0$ is the strength of this penalty (usually very close to zero).
-This prevents their values from growing unecessarily large (positively or
-negatively). The penalty itself is only the underbraced section `L1', and its
-derivative is:
+$\lambda > 0$ is the strength of this penalty (usually very close to
+zero). This prevents their values from growing unecessarily large
+(positively or negatively). The penalty itself is only the underbraced
+section `L1', and its derivative is:
 \[ \frac{d \text{L1}}{d \theta_i} = \lambda \frac{\theta_i}{|\theta_i|} \]
 
 \subsection{L2 (Ridge)}
 \[ E_\text{L2} = C(\theta) +
 \underbrace{\lambda{\sum}_i \theta_i^2}_\text{L2}, \]
-%spacing
-where $\lambda > 0$ is again the strength of the penalty. L2 Regularization is
-similar to L1, but the penalty is squared. The derivative of L2
-Regularization is:
+%
+where $\lambda > 0$ is again the strength of the penalty. L2
+Regularization is similar to L1, but the penalty is squared. The
+derivative of L2 Regularization is:
 \[ \frac{d \text{L2}}{d \theta_i} = 2 \lambda \theta_i \]
 
 \subsection{Elastic-Net (L1/L2)}
@@ -387,11 +387,12 @@ Elastic-Net serves as a combination of L1 and L2 Regularization, such that
 	(1 - \alpha){\sum}_i \theta_i^2 +
 	\alpha{\sum}_i |\theta_i|
 ), \]
-%spacing
-where $\lambda > 0$ is the total strength of the penalty -- affecting both the 
-L1 and L2 components, and $\alpha$ is the ratio between them. For example:
-If $\alpha=0$, Elastic-Net will be identical to L2 Regularization; if
-$\alpha=1$, it will instead be L1 Regularization. Its derivative is:
+%
+where $\lambda > 0$ is the total strength of the penalty -- affecting both
+the L1 and L2 components, and $\alpha$ is the ratio between them. For
+example: If $\alpha=0$, Elastic-Net will be identical to L2
+Regularization; if $\alpha=1$, it will instead be L1 Regularization. Its
+derivative is:
 \[ \frac{d \text{L1/L2}}{d \theta_i} =
 \lambda((1-\alpha) 2\theta_i + \alpha\frac{\theta_i}{|\theta_i|}) \]
 
@@ -407,6 +408,51 @@ smaller networks.
 For more information, see
 \href{http://jmlr.org/papers/volume15/srivastava14a.old/srivastava14a.pdf}
 {the original paper}.
+
+\subsection{Batch Normalization (batchnorm)}
+Batch Normalization is a the process of normalizing (from statistics) the
+activations of a layer over the course of a mini-batch. This is based on
+research that shows that normalizing the input data (with $\sigma=1$)
+speeds up training. The fundamental formula of Batch Normalization appears
+complex, but it is built of smaller parts. The normalization process
+occurs in relation to the other values for the same dimension for the
+mini-batch, so the dimension specification is omitted for clarity.
+
+We start with a mini-batch with size $m$:
+\[ \mathcal{B} = \{x_1, x_2, \dots x_m\} \]
+To apply batchnorm, we first compute the mean ($\mu$) and variance
+($\sigma^2$) of the batch:
+\[ \mu_\mathcal{B} = \frac{1}{m} \sum_{i=0}^m x_i \]
+\[ \sigma_\mathcal{B}^2 = \frac{1}{m} \sum_{i=0}^m
+	(x_i - \mu_\mathcal{B})^2 \]
+Then, normalize each $x$ to produce $\hat x$:
+\[ \hat x_i = \frac{x_i - \mu_\mathcal{B}}
+	{\sqrt{\sigma_\mathcal{B}^2 + \epsilon}} \]
+$\epsilon$ is ``a constant added for numerical stability.'' Finally, shift
+and scale by learnable parameters $\gamma$ and $\beta$:
+\[ y_i = \gamma \hat x_i + \beta \]
+The authors note that it is possible to un-learn this normalization if
+$\gamma$ assumes the value of $\sqrt{\sigma_\mathcal{B}^2 + \epsilon}$ and
+$\beta$ assumes the value of $\mu_\mathcal{B}$. These parameters are
+initialized at $\gamma=1$ and $\beta=0$ to start with the full
+normalization. After training, population statistics are used, with the
+normalization becoming more accurate as the number of samples increases.
+
+Batchnorm has several problems in application, most notably the
+impracticality of computing statistics on all of a layer's inputs
+throughout an entire mini-batch before providing a single output. This can
+be solved by using running averages instead, but that solution runs into
+problems when the batch size is small -- it usually takes many iterations
+before the running averages are stable and accurate.
+
+For more information, see \href{https://arxiv.org/pdf/1502.03167.pdf}{the
+original paper}.
+
+\subsubsection{Batch Renomalization (Batch Renorm)}
+Batch Renormalization proposes to fix the problems that Batch
+Normalization encounters with small batch sizes.
+\href{https://arxiv.org/pdf/1702.03275.pdf}{Here}'s the paper.
+
 
 \subsection{Data Agumentation}
 Overfitting data can also be caused by not having enough training data.

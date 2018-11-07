@@ -270,7 +270,7 @@ Softplus is a smooth approximation of ReLU, in a similar fashion to ELU,
 but it appproaches 0 towards negative infinity. Towards positive infinity,
 it approaches the line $y=x$, and it does so very quickly. ($f(4)=4.02$)
 The derivative of Softplus is the sigmoid function:
-\[ \frac{d a_i}{d P_i} = \frac{1}{1 + e^{P_i}} \]
+\[ \frac{d a_i}{d P_i} = \frac{e^{P_i}}{1 + e^{P_i}} = \frac{1}{1 + e^{-P_i}} \]
 
 \subsection{Tanh}
 \[ a_i = \text{tanh}(P_i) = \frac{e^{P_i} - e^{-P_i}}{e^{P_i} + e^{P_i}} =
